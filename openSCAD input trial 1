@@ -1,0 +1,35 @@
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <vector>
+#include <iostream>
+#include <fstream>
+
+using namespace cv;
+using namespace std;
+
+int radius = 100;
+int height = 500, X1 = 100, Y1 = 100, X2 = 0, Y2 = -100;
+
+
+int main () {
+    
+    vector<vector<Point> > contours;
+    
+    
+    
+  ofstream myfile;
+    myfile.open ("example.scad");
+    //myfile << "difference(){"<< endl << "translate;
+    myfile << "difference(){" << endl << "rotate([0,90,0])"  << endl;
+    myfile << "cylinder(h=" << height << ",r=" << radius << ");" << endl;
+    myfile << "translate([100,0,-" << radius << "])" << endl << "linear_extrude(" << 2*radius <<")" << endl << "polygon([";
+    myfile << "[0,0],[10,0],[13,10],[23,10],[9,20],[19,20]";
+    myfile << "], paths=[[0,2,4,5,3,1";
+    myfile << "]]);" << endl;
+    myfile << "}";
+    myfile.close();
+  return 0;
+}
