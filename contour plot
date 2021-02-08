@@ -1,0 +1,54 @@
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <iostream>
+#include <vector>
+
+using namespace cv;
+using namespace std;
+
+
+Mat imgray;
+int thresh = 100;
+RNG rng(12345);
+
+int main( int argc, char** argv )
+{
+    
+    Mat im = imread("/Users/louissherratt/Documents/opentest/opentest/frac3.png");
+    // Check for failure
+    if (im.empty())
+    {
+     cout << "Could not open or find the image" << endl;
+     cin.get(); //wait for any key press
+     return -1;
+    }
+    
+    cvtColor(im, imgray, COLOR_BGR2GRAY);
+    const char* source_window = "Source";
+        namedWindow( source_window );
+        imshow( source_window, im );
+    
+    Mat canny_output;
+    Canny( imgray, canny_output, thresh, thresh*2 );
+    
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    
+    findContours(canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+    Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
+    
+    for( size_t i = 0; i< contours.size(); i++ )
+        {
+            Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
+            drawContours( drawing, contours, (int)i, color, 2, LINE_8, hierarchy, 0 );
+        }
+        imshow( "Contours", drawing );
+
+    
+    waitKey();
+    return 0;
+}
