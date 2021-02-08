@@ -1,0 +1,71 @@
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <vector>
+#include <iostream>
+#include <fstream>
+
+using namespace cv;
+using namespace std;
+
+int radius = 100, height = 500, X1 = 100, Y1 = 100, X2 = 0, Y2 = -100;
+
+Mat imgray;
+int thresh = 100;
+RNG rng(12345);
+
+int main( int argc, char** argv )
+{
+    
+    Mat im = imread("/Users/louissherratt/Documents/opentest/opentest/frac3.png");
+    // Check for failure
+    if (im.empty())
+    {
+     cout << "Could not open or find the image" << endl;
+     cin.get(); //wait for any key press
+     return -1;
+    }
+    
+    cvtColor(im, imgray, COLOR_BGR2GRAY);
+    const char* source_window = "Source";
+        namedWindow( source_window );
+        imshow( source_window, im );
+    
+    Mat canny_output;
+    Canny( imgray, canny_output, thresh, thresh*2 );
+    
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    
+    findContours(canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+    Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
+    
+    for( size_t i = 0; i< contours.size(); i++ )
+        {
+            Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
+            drawContours( drawing, contours, (int)i, color, 2, LINE_8, hierarchy, 0 );
+        }
+        imshow( "Contours", drawing );
+
+ 
+
+    
+
+  ofstream myfile;
+    myfile.open ("example.scad");
+    //myfile << "difference(){"<< endl << "translate;
+    myfile << "difference(){" << endl << "rotate([0,90,0])"  << endl;
+    myfile << "cylinder(h=" << height << ",r=" << radius << ");" << endl;
+    myfile << "translate([100,0,-" << radius << "])" << endl << "linear_extrude(" << 2*radius <<")" << endl << "polygon([";
+    myfile << "[0,0],[10,0],[13,10],[23,10],[9,20],[19,20]";
+    myfile << "], paths=[[0,2,4,5,3,1";
+    myfile << "]]);" << endl;
+    myfile << "}";
+    myfile.close();
+    
+    waitKey();
+return 0;
+}
