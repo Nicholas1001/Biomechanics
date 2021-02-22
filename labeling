@@ -1,0 +1,38 @@
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <iostream>
+using namespace cv;
+using namespace std;
+Mat imbw, imgray;
+int threshval = 100;
+
+
+
+int main() {
+    Mat im = imread("/Users/louissherratt/Documents/opentest/opentest/Blob.png");
+       // Check for failure
+       if (im.empty())
+       {
+        cout << "Could not open or find the image" << endl;
+        cin.get(); //wait for any key press
+        return -1;
+       }
+    cvtColor(im, imgray, COLOR_BGR2GRAY);
+    threshold(imgray, imbw, 50, 255,THRESH_BINARY);
+    
+    Mat stat,centroid,labelImage;
+    int nLabels = connectedComponentsWithStats(imbw, labelImage, stat, centroid,8);
+    vector<Rect> rComp;
+    for (int i=0;i<nLabels;i++)
+    {
+    //   Rect r(Rect(Point(stat.at<int>(i,CC_STAT_LEFT ),stat.at<int>(i,CC_STAT_TOP)),Size(stat.at<int>(i,CC_STAT_WIDTH ),stat.at<int>(i,CC_STAT_HEIGHT))))rComp.push_back(r);
+    //    rectangle(imbw,r,Scalar::all(255),1);
+        cout<<stat.at<int>(i,CC_STAT_AREA);
+    }
+    waitKey(0);
+    return EXIT_SUCCESS;
+}
