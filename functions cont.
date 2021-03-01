@@ -1,0 +1,138 @@
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <ostream>
+#include <fstream>
+
+using namespace cv;
+using namespace std;
+
+
+Mat Fileinput(string filename){
+    Mat im;
+    //change this to be universal, not sure how.
+    im = imread("/Users/louissherratt/Documents/opentest/opentest/" + filename + ".PNG");
+    return(im);
+}
+
+void output(vector<vector<Point>> contours, vector<vector<Point>> contours2, int height, int width){
+    ofstream myfile;
+      myfile.open ("example.scad");
+      myfile << "difference(){"<< endl;
+      myfile << "linear_extrude(" << width <<")" << endl << "polygon([";
+      for (int j = 0; j < contours2[0].size(); j++){
+              myfile << contours2[0][j] << ",";
+        }
+      myfile << "]);" << endl;
+      myfile << "translate(["<< width <<",-5,-5])" << endl << "rotate([0,-90,0])" << endl;
+      myfile << "difference(){" << endl;
+      myfile << "cube(["<< width+10 <<"," << height << "," << width+10 << "]);" << endl;
+      myfile << "linear_extrude(" << width +20 <<")" << endl << "polygon([";
+      for (int j = 0; j < contours[0].size(); j++){
+                myfile << contours[0][j] << ",";
+          }
+      myfile << "]);}}";
+      myfile.close();
+}
+
+vector<vector<Point>> processing(Mat im, string file){
+    
+    int thresh = 100;
+    Mat imgray, imbw;
+    RNG rng(12345);
+    
+    cvtColor(im, imgray, COLOR_BGR2GRAY);
+    threshold(imgray, imbw, 50, 255,THRESH_BINARY);
+    
+    string source_window = ("Source " + file);
+    namedWindow( source_window );
+    imshow( source_window, imbw );
+    
+    Mat canny_output;
+    Canny( imbw, canny_output, thresh, thresh*2 );
+    
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    
+    findContours(canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+    Mat drawing = Mat::zeros( canny_output.size(), CV_8UC3 );
+    
+    for( size_t i = 0; i< contours.size(); i++ )
+        {
+            Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
+            drawContours( drawing, contours, (int)i, color, 2, LINE_8, hierarchy, 0 );
+        }
+    source_window = (source_window + " contours");
+    imshow( source_window, drawing );
+    
+    return(contours);
+    
+}
+
+
+int width, height, xy, xz;
+Mat im, im2;
+string filename1, filename2;
+Point a, b;
+vector<int> xvalues, xvalues2;
+vector<vector<Point> > contours, contours2, flat, flat2;
+
+int main()
+{
+    
+   
+    cout << "input the first filename as a .jpg or .png" << endl;
+    getline(cin,filename1);
+    cout << endl << "input the second filename" << endl;
+    getline(cin,filename2);
+    
+    im = Fileinput(filename1);
+    im2 = Fileinput(filename2);
+    // Check for failure
+    if (im.empty() or im2.empty())
+    {
+        cout << "Could not open or find the image restart program" << endl;
+        return 0;
+    }
+    
+    //needs work - find end of fracture to identify extermities
+    contours = processing(im, filename1);
+    contours2 = processing(im2, filename2);
+    
+    for (int j = 0; j < contours[0].size(); j++){
+        xvalues.push_back(contours[0][j].y);
+        xvalues2.push_back(contours2[0][j].y);
+    }
+    sort(xvalues.begin(), xvalues.end());
+    sort(xvalues2.begin(), xvalues2.end());
+    
+    xy = xvalues.back();
+    cout << xy << endl;
+    xz = xvalues2.back();
+    cout << xz << endl;
+    
+        cout << "Sorted \n";
+        for (auto x : xvalues)
+            cout << x << " ";
+    
+    width= im.size().width;
+    height= im.size().height;
+    
+    
+    
+    // important concept
+    //a = contours[0][0];
+    //xy = contours[0][0].x;
+    //cout << a << " " << b << " " << x << " " << y << endl;
+    
+
+    output(contours, contours, height, width);
+    
+    waitKey();
+    return 0;
+}
