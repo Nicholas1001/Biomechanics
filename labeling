@@ -1,4 +1,3 @@
-
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -7,13 +6,14 @@
 #include <iostream>
 using namespace cv;
 using namespace std;
+
 Mat imbw, imgray;
-int threshval = 100;
+int threshval = 100,t,l, w, h, a;
 
 
 
 int main() {
-    Mat im = imread("/Users/louissherratt/Documents/opentest/opentest/Blob.png");
+    Mat im = imread("/Users/louissherratt/Documents/opentest/opentest/IMG.png");
        // Check for failure
        if (im.empty())
        {
@@ -25,14 +25,30 @@ int main() {
     threshold(imgray, imbw, 50, 255,THRESH_BINARY);
     
     Mat stat,centroid,labelImage;
+    //int labels = connectedComponents(imbw, labelImage, 8, CV_32S);
     int nLabels = connectedComponentsWithStats(imbw, labelImage, stat, centroid,8);
     vector<Rect> rComp;
     for (int i=0;i<nLabels;i++)
     {
-    //   Rect r(Rect(Point(stat.at<int>(i,CC_STAT_LEFT ),stat.at<int>(i,CC_STAT_TOP)),Size(stat.at<int>(i,CC_STAT_WIDTH ),stat.at<int>(i,CC_STAT_HEIGHT))))rComp.push_back(r);
-    //    rectangle(imbw,r,Scalar::all(255),1);
-        cout<<stat.at<int>(i,CC_STAT_AREA);
+        l=stat.at<int>(i,CC_STAT_LEFT);
+        t=stat.at<int>(i,CC_STAT_TOP);
+        w=stat.at<int>(i,CC_STAT_WIDTH);
+        h=stat.at<int>(i,CC_STAT_HEIGHT);
+        a=stat.at<int>(i,CC_STAT_AREA);
+        cout << "label " << i << endl  << " left " << l << " " << endl;
+        cout << " top " << t  << " " << endl;
+        cout << " width " << w << " " << endl;
+        cout << " height " << h << " " << endl;
+        Rect r(l, t, w, h);
+        rectangle(imbw,r,Scalar::all(255),1);
+        cout<< " area " << a << " " << endl;
     }
+    
+    string source_window = ("Source ");
+    namedWindow( source_window );
+    imshow( source_window, imbw );
+    
+    cout << " centroid " << centroid << endl;
     waitKey(0);
     return EXIT_SUCCESS;
 }
