@@ -1,0 +1,23 @@
+clc;
+clear all;
+I = imread('distil.jpg');
+
+figure;
+imshow(I);
+
+[x,y] = ginput(4);
+% Draw the two lines that the four points represent
+
+I=insertMarker(I,[x(1) y(1)],'x','color','red','size',20);
+I=insertMarker(I,[x(2) y(2)],'x','color','red','size',20);
+I=insertMarker(I,[x(3) y(3)],'x','color','red','size',20);
+I=insertMarker(I,[x(4) y(4)],'x','color','red','size',20);
+imshow(I)
+[u,v] = ginput(4);
+
+line(u(1:2), v(1:2));
+line(u(3:4), v(3:4));
+
+
+
+
