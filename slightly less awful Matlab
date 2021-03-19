@@ -1,0 +1,58 @@
+clc;
+close all
+clear all;
+
+inangle1 = 60;
+wristwidth = 60; %mm
+
+I = imread('distil.jpg');
+[rows, columns, numberOfColorBands] = size(I);
+figure;
+imshow(I);
+%%
+[widthx, widthy] = ginput(2);
+distanceInPixels = sqrt((widthx(1)-widthx(2))^2 + (widthy(1)-widthy(2))^2);
+pixelwidth = distanceInPixels/60;
+MM = pixelwidth*6;
+
+[x,y] = ginput(4);
+
+x(5) = x(2)-MM;
+x(6) = x(4)-MM;
+y(5) = y(2)+MM;
+y(6) = y(4)+MM;
+
+for i = 1:6
+    I=insertMarker(I,[x(i) y(i)],'x','color','red','size',20);
+end
+
+imshow(I)
+
+[u,v] = ginput(4);
+
+line(u(1:2), v(1:2), 'color','red', 'linestyle', '--', 'linewidth', 2);
+line(u(3:4), v(3:4), 'color','red', 'linestyle', '--', 'linewidth', 2);
+
+%%
+
+ul1 = abs(u(1)-u(2));
+ul1_8 = ul1/4;
+vl1 = abs(v(1)-v(2));
+vl1_8 = vl1/4;
+alpha = (atan(vl1/ul1))*180/pi()
+
+i = [x(2) u(2)-ul1_8 x(5) u(1)+ul1_8];
+j = [y(2) v(2)-vl1_8 y(5) v(1)+vl1_8];
+line(i(1:2), j(1:2), 'color','b', 'linewidth', 2);
+line(i(3:4), j(3:4), 'color','b', 'linewidth', 2);
+
+ul2 = abs(u(3)-u(4));
+ul2_8 = ul2/4;
+vl2 = abs(v(3)-v(4));
+vl2_8 = vl2/4;
+beta = (atan(vl2/ul2))*180/pi()
+
+k = [x(4) u(4)-ul2_8 x(6) u(3)+ul2_8];
+l = [y(4) v(4)-vl2_8 y(6) v(3)+vl2_8];
+line(k(1:2), l(1:2), 'color','b', 'linewidth', 2);
+line(k(3:4), l(3:4), 'color','b', 'linewidth', 2);
