@@ -1,0 +1,141 @@
+clc;
+close all
+clear all;
+
+%inangle1 = 60;
+wristwidth = 60; %mm
+loops =36;
+
+I = imread('distil.jpg');
+[rows, columns, numberOfColorBands] = size(I);
+figure;
+imshow(I);
+%%
+[widthx, widthy] = ginput(2);
+distanceInPixels = sqrt((widthx(1)-widthx(2))^2 + (widthy(1)-widthy(2))^2);
+pixelwidth = distanceInPixels/60;
+MM = pixelwidth*10;
+
+[x,y] = ginput(4);
+y(4) = y(2);
+x(5) = x(2)-MM/2;
+x(6) = x(4)-MM;
+y(5) = y(2)+MM;
+y(6) = y(4)+MM;
+
+for i = 1:6
+    I=insertMarker(I,[x(i) y(i)],'x','color','red','size',20);
+end
+
+imshow(I)
+
+[u,v] = ginput(4);
+
+line(u(1:2), v(1:2), 'color','red', 'linestyle', '--', 'linewidth', 2);
+line(u(3:4), v(3:4), 'color','red', 'linestyle', '--', 'linewidth', 2);
+
+ul1 = abs(u(1)-u(2));
+vl1 = abs(v(1)-v(2));
+vl = v(1)-v(2);
+theata = atan(vl/ul1)*180/pi();
+
+ul2 = abs(u(3)-u(4));
+vl2 = abs(v(3)-v(4));
+vl = v(3)-v(4);
+alpha = atan(vl/ul2)*180/pi();
+
+va = [u(1) - u(2), v(1) - v(2)];%, u(4) - u(3)];
+vb = [u(3) - u(4), v(3) - v(4)]; 
+
+vab = [u(1) - u(2), v(1) - v(2), u(3) - u(4)];
+
+%%
+r=0.25;
+o = zeros(loops, 1);
+a = zeros(loops, 1);
+lines = zeros(2*loops, 8);
+
+for q = 1:1:loops
+    angle = q*(360/loops)*pi()/180;
+    
+    
+    o(q) = r*sin(angle);
+    a(q) = r*cos(angle);
+    
+    ul = 0.25*ul1+ul1*(0.5-r-a(q));
+    vl = 0.25*vl1+vl1*(0.5-r-a(q));  
+    
+    lines(2*q-1,1) = u(2)-ul;
+    lines(2*q,1) = u(1)+ul;
+    
+    
+    if (v(1) < v(2)) 
+        line([x(2) u(2)-ul], [y(2) v(2)-vl], 'color','b', 'linewidth', 1);
+        line([x(5) u(1)+ul], [y(5) v(1)+vl], 'color','r', 'linewidth', 1);
+        lines(2*q-1,2) = v(2)-vl;
+        lines(2*q,2) = v(1)+vl;
+    else
+        line([x(2) u(2)-ul], [y(2) v(2)+vl], 'color','b', 'linewidth', 1);
+        line([x(5) u(1)+ul], [y(5) v(1)-vl], 'color','r', 'linewidth', 1);
+        lines(2*q-1,2) = v(2)+vl;
+        lines(2*q,2) = v(1)-vl;
+    end
+    
+    ul = 0.25*ul2+ul2*(0.5-r-o(q));
+    vl = 0.25*vl2+vl2*(0.5-r-o(q));
+    
+    lines(2*q-1,3) = u(4)-ul;
+    lines(2*q,3) = u(3)+ul;
+    
+    if (v(3) < v(4)) 
+        line([x(4) u(4)-ul], [y(4) v(4)-vl], 'color','b', 'linewidth', 1);
+        line([x(6) u(3)+ul], [y(6) v(3)+vl], 'color','r', 'linewidth', 1);
+        lines(2*q-1,4) = v(4)-vl;
+        lines(2*q,4) = v(3)+vl;
+    else
+        line([x(4) u(4)-ul], [y(4) v(4)+vl], 'color','b', 'linewidth', 1);
+        line([x(6) u(3)+ul], [y(6) v(3)-vl], 'color','r', 'linewidth', 1);
+        lines(2*q-1,4) = v(4)+vl;
+        lines(2*q,4) = v(3)-vl;
+    end
+
+    vc = [lines(2*q-1,1) - x(2), lines(2*q-1,2) - y(2)]; 
+    vd = [lines(2*q,1) - x(5),lines(2*q,2) - y(5)];
+    ve = [lines(2*q-1,3) - x(4), lines(2*q-1,4) - y(4)];
+    vf = [lines(2*q,3) - x(6), lines(2*q,4) - y(6)];
+    
+    vce = [lines(2*q-1,1) - x(2), lines(2*q-1,2) - y(2), lines(2*q-1,3) - x(4)];
+    vdf = [lines(2*q,1) - x(5), lines(2*q,2) - y(5), lines(2*q,3) - x(6)];
+
+    lines(2*q-1,5) = acosd(dot(va, vc) / (norm(va) * norm(vc)));
+    lines(2*q,5) = acosd(dot(va, vd) / (norm(va) * norm(vd)));
+    
+    lines(2*q-1,6) = acosd(dot(vb, ve) / (norm(vb) * norm(ve)));
+    lines(2*q,6) = acosd(dot(vb, vf) / (norm(vb) * norm(vf)));
+    
+    lines(2*q-1,7) = acosd(dot(vab, vce) / (norm(vab) * norm(vce)));
+    lines(2*q,7) = acosd(dot(vab, vdf) / (norm(vab) * norm(vdf)));
+    
+    if (lines(2*q-1,7) > 60 && lines(2*q,7) > 60)
+        lines(2*q-1,8) = 1;
+        lines(2*q,8) =1;
+    end
+    
+end
+pastval = 120;
+for q = 1:1:loops
+    if lines(2*q-1,8) == 1
+        val = lines(2*q-1,7)+lines(2*q,7);
+        if abs(lines(2*q-1,7)-lines(2*q,7)) <8
+            if val > pastval
+                pastval = val;
+                co = 2*q;
+            end
+        end
+    end
+end
+
+line([x(4) lines(co-1,3)], [y(4) lines(co-1,4)], 'color','g', 'linewidth', 2);
+line([x(6) lines(co,3)], [y(6) lines(co,4)], 'color','g', 'linewidth', 2);
+line([x(2) lines(co-1,1)], [y(2) lines(co-1,2)], 'color','g', 'linewidth', 2);
+line([x(5) lines(co,1)], [y(5) lines(co,2)], 'color','g', 'linewidth', 2);
