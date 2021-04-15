@@ -3,7 +3,7 @@ close all
 
 wristwidth = 60; %mm
 
-%reads the image (currenly only one image taken, ideally altered)
+%reads the images and combines into one by concatination
 I1 = imread('distil2.jpg');
 I2 = imread('distil3.jpg');
 I1 = rgb2gray(I1);
